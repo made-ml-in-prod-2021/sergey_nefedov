@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, recall_score, f1_score, roc_auc_score
 
-from ml_example.enities.train_params import TrainingParams
+from src.enities.train_params import TrainingParams
 
 SklearnRegressionModel = Union[RandomForestClassifier]
 

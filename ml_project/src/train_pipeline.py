@@ -5,14 +5,14 @@ import sys
 import click
 import pandas as pd
 
-from ml_example.data import read_data, split_train_val_data
-from ml_example.enities.train_pipeline_params import (
+from src.data import read_data, split_train_val_data
+from src.enities.train_pipeline_params import (
     TrainingPipelineParams,
     read_training_pipeline_params,
 )
-from ml_example.features import make_features
-from ml_example.features.build_features import extract_target, build_transformer
-from ml_example.models import (
+from src.features import make_features
+from src.features.build_features import extract_target, build_transformer
+from src.models import (
     train_model,
     serialize_model,
     predict_model,
