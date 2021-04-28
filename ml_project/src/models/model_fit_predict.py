@@ -3,21 +3,25 @@ from typing import Dict, Union
 
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, recall_score, f1_score, roc_auc_score
 
 from src.enities.train_params import TrainingParams
 
-SklearnRegressionModel = Union[RandomForestClassifier]
+SklearnClassificationModel = Union[RandomForestClassifier, LogisticRegression]
 
 
 def train_model(
     features: pd.DataFrame, target: pd.Series, train_params: TrainingParams
-) -> SklearnRegressionModel:
+) -> SklearnClassificationModel:
     if train_params.model_type == "RandomForestClassifier":
         model = RandomForestClassifier(
-            n_estimators=100, random_state=train_params.random_state
+            n_estimators=train_params.n_estimators,
+            random_state=train_params.random_state,
         )
+    elif train_params.model_type == "LogisticRegression":
+        model = LogisticRegression(max_iter=train_params.max_iter)
     else:
         raise NotImplementedError()
     model.fit(features, target)
@@ -25,7 +29,7 @@ def train_model(
 
 
 def predict_model(
-    model: SklearnRegressionModel, features: pd.DataFrame, use_log_trick: bool = True
+    model: SklearnClassificationModel, features: pd.DataFrame, use_log_trick: bool = True
 ) -> np.ndarray:
     predicts = model.predict(features)
     if use_log_trick:
@@ -46,7 +50,7 @@ def evaluate_model(
     }
 
 
-def serialize_model(model: SklearnRegressionModel, output: str) -> str:
+def serialize_model(model: SklearnClassificationModel, output: str) -> str:
     with open(output, "wb") as f:
         pickle.dump(model, f)
     return output
