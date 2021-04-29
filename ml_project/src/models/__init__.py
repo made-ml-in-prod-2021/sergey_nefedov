@@ -3,6 +3,7 @@ from .model_fit_predict import (
     serialize_model,
     predict_model,
     evaluate_model,
+    load_model,
 )
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "serialize_model",
     "evaluate_model",
     "predict_model",
+    "load_model",
 ]
