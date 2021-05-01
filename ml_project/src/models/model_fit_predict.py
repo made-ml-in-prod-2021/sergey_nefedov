@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, recall_score, f1_score, roc_auc_score
 
-from src.enities.train_params import TrainingParams
+from src.entities.train_params import TrainingParams
 
 SklearnClassificationModel = Union[RandomForestClassifier, LogisticRegression]
 
@@ -46,7 +46,7 @@ def evaluate_model(
         "accuracy": accuracy_score(target, predicts),
         "recall": recall_score(target, predicts),
         "f1_score": f1_score(target, predicts),
-        "roc_auc:": roc_auc_score(target, predicts),
+        "roc_auc": roc_auc_score(target, predicts),
     }
 
 

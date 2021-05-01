@@ -1,10 +1,9 @@
 import logging
 import sys
-
 import click
-import pandas as pd
 
-from src.enities.predict_pipeline_params import (
+
+from src.entities.predict_pipeline_params import (
     PredictPipelineParams,
     read_predict_pipeline_params,
 )
@@ -30,6 +29,7 @@ def setup_pipeline_params(config_path: str):
     """ Extract params from given yaml config path. """
     params = read_predict_pipeline_params(config_path)
     return params
+
 
 def predict_pipeline(predict_pipeline_params: PredictPipelineParams):
     logger.info(f"start predict pipeline with params {predict_pipeline_params}")

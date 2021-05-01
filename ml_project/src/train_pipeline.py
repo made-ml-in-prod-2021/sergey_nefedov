@@ -6,7 +6,7 @@ import click
 import pandas as pd
 
 from src.data import read_data, split_train_val_data
-from src.enities.train_pipeline_params import (
+from src.entities.train_pipeline_params import (
     TrainingPipelineParams,
     read_training_pipeline_params,
 )
