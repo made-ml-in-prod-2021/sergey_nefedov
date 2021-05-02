@@ -12,6 +12,7 @@ from src.entities.train_pipeline_params import (
 )
 from src.features import make_features
 from src.features.build_features import extract_target, build_transformer
+from src.features.outlier_transformer import OutlierTransformer
 from src.models import (
     train_model,
     serialize_model,
@@ -29,6 +30,12 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
     logger.info(f"start train pipeline with params {training_pipeline_params}")
     data = read_data(training_pipeline_params.input_data_path)
     logger.info(f"data.shape is {data.shape}")
+
+    outlier_transformer = OutlierTransformer(training_pipeline_params.feature_params, threshold=0.05)
+    outlier_transformer.fit(data)
+    data = outlier_transformer.transform(data)
+    logger.info(f"after remove outliers values: data.shape is {data.shape}")
+
     train_df, val_df = split_train_val_data(
         data, training_pipeline_params.splitting_params
     )

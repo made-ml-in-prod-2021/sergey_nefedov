@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+from typing import List
 
 from src.entities.feature_params import FeatureParams
 from src.features.build_features import (
@@ -7,21 +8,22 @@ from src.features.build_features import (
     build_transformer,
     extract_target,
 )
+from src.features.outlier_transformer import OutlierTransformer
 from src.data.make_dataset import read_data
 
 
 @pytest.fixture()
-def categorical_features() -> list:
+def categorical_features() -> List[str]:
     return ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
 
 
 @pytest.fixture()
-def numerical_features() -> list:
+def numerical_features() -> List[str]:
     return ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
 
 
 @pytest.fixture()
-def features_to_drop() -> list:
+def features_to_drop() -> List[str]:
     return ['']
 
 
@@ -36,10 +38,10 @@ def dataset_path() -> str:
 
 
 @pytest.fixture()
-def feature_params(categorical_features,
-                   numerical_features,
-                   features_to_drop,
-                   target_col,
+def feature_params(categorical_features: List[str],
+                   numerical_features: List[str],
+                   features_to_drop: List[str],
+                   target_col: str,
                    ) -> FeatureParams:
     return FeatureParams(
         categorical_features=categorical_features,
@@ -51,9 +53,14 @@ def feature_params(categorical_features,
 
 def test_make_features(feature_params: FeatureParams, dataset_path: str):
     df = read_data(dataset_path)
-    transformer = build_transformer(feature_params)
-    transformer.fit(df)
-    features = make_features(transformer, df)
+
+    outlier_transformer = OutlierTransformer(feature_params, threshold=0.05)
+    outlier_transformer.fit(df)
+    df = outlier_transformer.transform(df)
+
+    column_transformer = build_transformer(feature_params)
+    column_transformer.fit(df)
+    features = make_features(column_transformer, df)
     assert features.shape[1] == 30, (
         f"Its expected to have 30 features after transformer, got {features.shape[1]}"
     )
