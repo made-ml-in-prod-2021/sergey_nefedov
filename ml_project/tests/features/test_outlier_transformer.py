@@ -50,6 +50,6 @@ def feature_params(categorical_features: List[str],
 
 
 def test_outlier_transformer(test_df: pd.DataFrame):
-    transformer = OutlierTransformer(feature_params, threshold=0.05)
+    transformer = OutlierTransformer(feature_params)
     transformed_df = transformer.transform(test_df, columns=['feature'])
-    assert transformed_df.shape == (test_df.shape[0] - 2, test_df.shape[1])
+    assert transformed_df.shape == test_df.shape

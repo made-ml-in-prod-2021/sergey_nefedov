@@ -54,7 +54,7 @@ def feature_params(categorical_features: List[str],
 def test_make_features(feature_params: FeatureParams, dataset_path: str):
     df = read_data(dataset_path)
 
-    outlier_transformer = OutlierTransformer(feature_params, threshold=0.05)
+    outlier_transformer = OutlierTransformer(feature_params)
     outlier_transformer.fit(df)
     df = outlier_transformer.transform(df)
 

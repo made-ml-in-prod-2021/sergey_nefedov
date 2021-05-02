@@ -7,8 +7,7 @@ from src.entities.feature_params import FeatureParams
 class OutlierTransformer(BaseEstimator, TransformerMixin):
     """ Custom Transformer """
 
-    def __init__(self, feature_params: FeatureParams, threshold: float = 0.05):
-        self.threshold = threshold
+    def __init__(self, feature_params: FeatureParams):
         self.feature_params = feature_params
 
     def fit(self, df: pd.DataFrame, y=None):
@@ -20,8 +19,11 @@ class OutlierTransformer(BaseEstimator, TransformerMixin):
             columns = self.feature_params.numerical_features
 
         for column in columns:
-            left = df[column].quantile(self.threshold)
-            right = df[column].quantile(1 - self.threshold)
+            perc25 = df[column].quantile(0.25)
+            perc75 = df[column].quantile(0.75)
+            IQR = perc75 - perc25
+            left = perc25 - 1.5 * IQR
+            right = perc75 + 1.5 * IQR
             df = df[(df[column] >= left) & (df[column] <= right)]
 
         return df

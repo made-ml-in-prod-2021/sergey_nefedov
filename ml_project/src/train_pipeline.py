@@ -31,7 +31,7 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
     data = read_data(training_pipeline_params.input_data_path)
     logger.info(f"data.shape is {data.shape}")
 
-    outlier_transformer = OutlierTransformer(training_pipeline_params.feature_params, threshold=0.05)
+    outlier_transformer = OutlierTransformer(training_pipeline_params.feature_params)
     outlier_transformer.fit(data)
     data = outlier_transformer.transform(data)
     logger.info(f"after remove outliers values: data.shape is {data.shape}")
