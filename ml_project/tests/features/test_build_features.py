@@ -1,6 +1,4 @@
-import pytest
 import numpy as np
-from typing import List
 
 from src.entities.feature_params import FeatureParams
 from src.features.build_features import (
@@ -10,45 +8,6 @@ from src.features.build_features import (
 )
 from src.features.outlier_transformer import OutlierTransformer
 from src.data.make_dataset import read_data
-
-
-@pytest.fixture()
-def categorical_features() -> List[str]:
-    return ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
-
-
-@pytest.fixture()
-def numerical_features() -> List[str]:
-    return ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
-
-
-@pytest.fixture()
-def features_to_drop() -> List[str]:
-    return ['']
-
-
-@pytest.fixture()
-def target_col() -> str:
-    return 'target'
-
-
-@pytest.fixture()
-def dataset_path() -> str:
-    return 'data/raw/heart.csv'
-
-
-@pytest.fixture()
-def feature_params(categorical_features: List[str],
-                   numerical_features: List[str],
-                   features_to_drop: List[str],
-                   target_col: str,
-                   ) -> FeatureParams:
-    return FeatureParams(
-        categorical_features=categorical_features,
-        numerical_features=numerical_features,
-        features_to_drop=features_to_drop,
-        target_col=target_col,
-    )
 
 
 def test_make_features(feature_params: FeatureParams, dataset_path: str):

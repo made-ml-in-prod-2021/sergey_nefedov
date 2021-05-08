@@ -1,58 +1,11 @@
-from typing import List
-
 import pytest
-import pandas as pd
 
-from src.data.make_dataset import read_data
 from src.train_pipeline import train_pipeline
 from src.entities import (
     TrainingPipelineParams,
     SplittingParams,
-    FeatureParams,
     TrainingParams,
 )
-from tests.data_generator import generate_test_dataframe
-
-
-@pytest.fixture()
-def test_df() -> pd.DataFrame:
-    return generate_test_dataframe(size=10, random_state=42)
-
-
-@pytest.fixture()
-def categorical_features() -> List[str]:
-    return ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
-
-
-@pytest.fixture()
-def numerical_features() -> List[str]:
-    return ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
-
-
-@pytest.fixture()
-def features_to_drop() -> List[str]:
-    return ['']
-
-
-@pytest.fixture()
-def target_col() -> str:
-    return 'target'
-
-
-@pytest.fixture
-def feature_params(
-        categorical_features: List[str],
-        numerical_features: List[str],
-        features_to_drop: List[str],
-        target_col: str,
-) -> FeatureParams:
-    params = FeatureParams(
-        categorical_features=categorical_features,
-        numerical_features=numerical_features,
-        features_to_drop=features_to_drop,
-        target_col=target_col,
-    )
-    return params
 
 
 @pytest.fixture()

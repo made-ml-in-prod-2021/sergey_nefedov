@@ -1,15 +1,8 @@
-import pytest
 import numpy as np
 import pandas as pd
 
 from src.data.make_dataset import read_data, split_train_val_data
 from src.entities import SplittingParams
-from tests.data_generator import generate_test_dataframe
-
-
-@pytest.fixture()
-def test_df() -> pd.DataFrame:
-    return generate_test_dataframe(size=10, random_state=42)
 
 
 def test_read_data(tmpdir, test_df):

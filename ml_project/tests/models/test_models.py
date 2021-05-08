@@ -1,6 +1,6 @@
-from typing import List
-
 import pytest
+import pandas as pd
+
 from sklearn.ensemble import RandomForestClassifier
 
 
@@ -13,52 +13,9 @@ from src.features.build_features import (
     build_transformer,
 )
 from src.models import (
-    train_model,
     evaluate_model,
     predict_model,
-    serialize_model,
-    load_model,
 )
-from src.data.make_dataset import read_data
-
-
-@pytest.fixture()
-def dataset_path() -> str:
-    return 'data/raw/heart.csv'
-
-
-@pytest.fixture()
-def categorical_features() -> list:
-    return ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
-
-
-@pytest.fixture()
-def numerical_features() -> list:
-    return ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
-
-
-@pytest.fixture()
-def features_to_drop() -> list:
-    return ['']
-
-
-@pytest.fixture()
-def target_col() -> str:
-    return 'target'
-
-
-@pytest.fixture()
-def feature_params(categorical_features: List[str],
-                   numerical_features: List[str],
-                   features_to_drop: List[str],
-                   target_col: str,
-                   ) -> FeatureParams:
-    return FeatureParams(
-        categorical_features=categorical_features,
-        numerical_features=numerical_features,
-        features_to_drop=features_to_drop,
-        target_col=target_col,
-    )
 
 
 @pytest.fixture()
@@ -73,14 +30,13 @@ def training_params():
 
 def test_model_fit_predict(
         feature_params: FeatureParams,
-        dataset_path: str,
+        test_df: pd.DataFrame,
         training_params: TrainingParams,
 ):
-    df = read_data(dataset_path)
     transformer = build_transformer(feature_params)
-    transformer.fit(df)
-    features = make_features(transformer, df)
-    target = extract_target(df, feature_params)
+    transformer.fit(test_df)
+    features = make_features(transformer, test_df)
+    target = extract_target(test_df, feature_params)
 
     if training_params.model_type == 'RandomForestClassifier':
         model = RandomForestClassifier(
