@@ -2,6 +2,7 @@ import json
 import logging
 import sys
 
+from typing import Tuple
 import click
 import pandas as pd
 
@@ -31,9 +32,7 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
     data = read_data(training_pipeline_params.input_data_path)
     logger.info(f"data.shape is {data.shape}")
 
-    outlier_transformer = OutlierTransformer(training_pipeline_params.feature_params)
-    outlier_transformer.fit(data)
-    data = outlier_transformer.transform(data)
+    data = remove_outliers(data, training_pipeline_params)
     logger.info(f"after remove outliers values: data.shape is {data.shape}")
 
     train_df, val_df = split_train_val_data(
@@ -42,36 +41,16 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
     logger.info(f"train_df.shape is {train_df.shape}")
     logger.info(f"val_df.shape is {val_df.shape}")
 
-    transformer = build_transformer(training_pipeline_params.feature_params)
-    transformer.fit(train_df)
-    train_features = make_features(transformer, train_df)
-    train_target = extract_target(train_df, training_pipeline_params.feature_params)
-
+    train_features, train_target, val_features, val_target = transform_data(train_df, val_df, training_pipeline_params)
     logger.info(f"train_features.shape is {train_features.shape}")
 
-    model = train_model(
-        train_features, train_target, training_pipeline_params.train_params
-    )
+    model = train_model(train_features, train_target, training_pipeline_params.train_params)
 
-    val_features = make_features(transformer, val_df)
-    val_target = extract_target(val_df, training_pipeline_params.feature_params)
-
-    val_features_prepared = prepare_val_features_for_predict(
-        train_features, val_features
-    )
-
+    val_features_prepared = prepare_val_features_for_predict(train_features, val_features)
     logger.info(f"val_features.shape is {val_features_prepared.shape}")
-    predicts = predict_model(
-        model,
-        val_features_prepared,
-        training_pipeline_params.feature_params.use_log_trick,
-    )
 
-    metrics = evaluate_model(
-        predicts,
-        val_target,
-        use_log_trick=training_pipeline_params.feature_params.use_log_trick,
-    )
+    predicts = predict_model(model, val_features_prepared)
+    metrics = evaluate_model(predicts, val_target)
 
     with open(training_pipeline_params.metric_path, "w") as metric_file:
         json.dump(metrics, metric_file)
@@ -91,6 +70,33 @@ def prepare_val_features_for_predict(
     )
     val_features = val_features.fillna(0)
     return val_features
+
+
+def remove_outliers(
+        data: pd.DataFrame,
+        training_pipeline_params: TrainingPipelineParams,
+) -> pd.DataFrame:
+    outlier_transformer = OutlierTransformer(training_pipeline_params.feature_params)
+    outlier_transformer.fit(data)
+    data = outlier_transformer.transform(data)
+    return data
+
+
+def transform_data(
+        train_df: pd.DataFrame,
+        val_df: pd.DataFrame,
+        training_pipeline_params: TrainingPipelineParams,
+) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
+    transformer = build_transformer(training_pipeline_params.feature_params)
+    transformer.fit(train_df)
+
+    train_features = make_features(transformer, train_df)
+    train_target = extract_target(train_df, training_pipeline_params.feature_params)
+
+    val_features = make_features(transformer, val_df)
+    val_target = extract_target(val_df, training_pipeline_params.feature_params)
+
+    return train_features, train_target, val_features, val_target
 
 
 @click.command(name="train_pipeline")
