@@ -4,35 +4,39 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from src.entities import FeatureParams, TrainingParams
+from src.entities import (
+    FeatureParams,
+    TrainingParams,
+    SplittingParams,
+)
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def categorical_features() -> List[str]:
     return ['sex', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'ca', 'thal']
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def numerical_features() -> List[str]:
     return ['age', 'trestbps', 'chol', 'thalach', 'oldpeak']
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def features_to_drop() -> List[str]:
     return ['']
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def target_col() -> str:
     return 'target'
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def dataset_path() -> str:
     return 'data/raw/heart.csv'
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def feature_params(categorical_features: List[str],
                    numerical_features: List[str],
                    features_to_drop: List[str],
@@ -46,7 +50,7 @@ def feature_params(categorical_features: List[str],
     )
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
 def training_params():
     params = TrainingParams(
         model_type="RandomForestClassifier",
@@ -56,7 +60,16 @@ def training_params():
     return params
 
 
-@pytest.fixture()
+@pytest.fixture(scope='session')
+def splitting_params():
+    params = SplittingParams(
+        val_size=0.2,
+        random_state=42,
+    )
+    return params
+
+
+@pytest.fixture(scope='session')
 def test_df() -> pd.DataFrame:
     """ Generates random tests data. """
     size = 10

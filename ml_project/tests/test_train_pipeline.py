@@ -1,30 +1,5 @@
-import pytest
-
 from src.train_pipeline import train_pipeline
-from src.entities import (
-    TrainingPipelineParams,
-    SplittingParams,
-    TrainingParams,
-)
-
-
-@pytest.fixture()
-def training_params():
-    params = TrainingParams(
-        model_type="RandomForestClassifier",
-        n_estimators=100,
-        random_state=42,
-    )
-    return params
-
-
-@pytest.fixture()
-def splitting_params():
-    params = SplittingParams(
-        val_size=0.2,
-        random_state=42,
-    )
-    return params
+from src.entities import TrainingPipelineParams
 
 
 def test_train_pipeline(

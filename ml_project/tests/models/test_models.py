@@ -1,4 +1,3 @@
-import pytest
 import pandas as pd
 
 from sklearn.ensemble import RandomForestClassifier
@@ -16,16 +15,6 @@ from src.models import (
     evaluate_model,
     predict_model,
 )
-
-
-@pytest.fixture()
-def training_params():
-    params = TrainingParams(
-        model_type="RandomForestClassifier",
-        n_estimators=100,
-        random_state=42,
-    )
-    return params
 
 
 def test_model_fit_predict(
