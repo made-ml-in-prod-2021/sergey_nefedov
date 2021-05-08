@@ -27,16 +27,18 @@ def test_model_fit_predict(
     features = make_features(transformer, test_df)
     target = extract_target(test_df, feature_params)
 
-    if training_params.model_type == 'RandomForestClassifier':
-        model = RandomForestClassifier(
-            n_estimators=training_params.n_estimators,
-            random_state=training_params.random_state,
-        )
+    model = RandomForestClassifier(
+        n_estimators=training_params.n_estimators,
+        random_state=training_params.random_state,
+    )
 
     model.fit(features, target)
     predicts = predict_model(model, features)
     metrics = evaluate_model(predicts, target)
 
+    expected_metrics = ['accuracy', 'recall', 'f1_score', 'roc_auc']
+
+    assert set(metrics) == set(expected_metrics)
     assert metrics["accuracy"] > 0.5
     assert metrics["recall"] > 0.5
     assert metrics["f1_score"] > 0.5

@@ -17,5 +17,5 @@ def test_split_train_val_data(test_df: pd.DataFrame):
     splitting_params = SplittingParams(random_state=42, val_size=0.2)
     train_data, val_data = split_train_val_data(test_df, splitting_params)
 
-    assert train_data.shape[0] == 8
-    assert val_data.shape[0] == 2
+    assert train_data.shape[0] == test_df.shape[0] * (1 - splitting_params.val_size)
+    assert val_data.shape[0] == test_df.shape[0] * splitting_params.val_size

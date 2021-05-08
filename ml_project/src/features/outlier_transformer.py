@@ -1,5 +1,4 @@
 import pandas as pd
-from typing import List
 from sklearn.base import BaseEstimator, TransformerMixin
 from src.entities.feature_params import FeatureParams
 
