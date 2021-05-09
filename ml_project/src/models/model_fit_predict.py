@@ -1,3 +1,6 @@
+import logging
+import sys
+
 import pickle
 from typing import Dict, Union
 
@@ -10,6 +13,11 @@ from sklearn.metrics import accuracy_score, recall_score, f1_score, roc_auc_scor
 from src.entities.train_params import TrainingParams
 
 SklearnClassificationModel = Union[RandomForestClassifier, LogisticRegression]
+
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stdout)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 
 def train_model(
@@ -24,6 +32,7 @@ def train_model(
         model = LogisticRegression(max_iter=train_params.max_iter)
     else:
         raise NotImplementedError()
+    logger.info("Starting fit model...")
     model.fit(features, target)
     return model
 
@@ -31,6 +40,7 @@ def train_model(
 def predict_model(
     model: SklearnClassificationModel, features: pd.DataFrame, use_log_trick: bool = False
 ) -> np.ndarray:
+    logger.info("Starting model predict...")
     predicts = model.predict(features)
     if use_log_trick:
         predicts = np.exp(predicts)
@@ -40,6 +50,7 @@ def predict_model(
 def evaluate_model(
     predicts: np.ndarray, target: pd.Series, use_log_trick: bool = False
 ) -> Dict[str, float]:
+    logger.info(f"Starting model evaluate...")
     if use_log_trick:
         target = np.exp(target)
     return {
@@ -51,12 +62,14 @@ def evaluate_model(
 
 
 def serialize_model(model: SklearnClassificationModel, output: str) -> str:
+    logger.info(f"Serialize model to {output}")
     with open(output, "wb") as f:
         pickle.dump(model, f)
     return output
 
 
 def load_model(model_path: str) -> SklearnClassificationModel:
+    logger.info(f"Loading model from {model_path}")
     with open(model_path, "rb") as mp:
         model = pickle.load(mp)
     return model

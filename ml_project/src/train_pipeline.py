@@ -30,55 +30,46 @@ logger.addHandler(handler)
 def train_pipeline(training_pipeline_params: TrainingPipelineParams):
     logger.info(f"start train pipeline with params {training_pipeline_params}")
     data = read_data(training_pipeline_params.input_data_path)
-    logger.info(f"data.shape is {data.shape}")
 
     data = remove_outliers(data, training_pipeline_params)
-    logger.info(f"after remove outliers values: data.shape is {data.shape}")
 
-    train_df, val_df = split_train_val_data(
-        data, training_pipeline_params.splitting_params
-    )
+    train_df, val_df = split_train_val_data(data, training_pipeline_params.splitting_params)
     logger.info(f"train_df.shape is {train_df.shape}")
     logger.info(f"val_df.shape is {val_df.shape}")
 
     train_features, train_target, val_features, val_target = transform_data(train_df, val_df, training_pipeline_params)
-    logger.info(f"train_features.shape is {train_features.shape}")
 
+    logger.info(f"Training model: model_type = {training_pipeline_params.train_params.model_type}")
     model = train_model(train_features, train_target, training_pipeline_params.train_params)
+    logger.info("Model is ready for predict")
 
-    val_features_prepared = prepare_val_features_for_predict(train_features, val_features)
-    logger.info(f"val_features.shape is {val_features_prepared.shape}")
-
-    predicts = predict_model(model, val_features_prepared)
+    logger.info(f"Making predicts...")
+    predicts = predict_model(model, val_features)
+    logger.info(f"predicts.shape is {predicts.shape}")
     metrics = evaluate_model(predicts, val_target)
+    logger.info(f"metrics is {metrics}")
 
+    logger.info(f"Dumping metrics to {training_pipeline_params.metric_path}")
     with open(training_pipeline_params.metric_path, "w") as metric_file:
         json.dump(metrics, metric_file)
-    logger.info(f"metrics is {metrics}")
 
     path_to_model = serialize_model(model, training_pipeline_params.output_model_path)
 
     return path_to_model, metrics
 
 
-def prepare_val_features_for_predict(
-    train_features: pd.DataFrame, val_features: pd.DataFrame
-):
-    # small hack to work with categories
-    train_features, val_features = train_features.align(
-        val_features, join="left", axis=1
-    )
-    val_features = val_features.fillna(0)
-    return val_features
-
-
 def remove_outliers(
         data: pd.DataFrame,
         training_pipeline_params: TrainingPipelineParams,
 ) -> pd.DataFrame:
+    logger.info("build OutlierTransformer...")
     outlier_transformer = OutlierTransformer(training_pipeline_params.feature_params)
     outlier_transformer.fit(data)
+
+    logger.info(f"Removing outliers values: before shape is {data.shape}")
     data = outlier_transformer.transform(data)
+    logger.info(f"Removing outliers values: after data.shape is {data.shape}")
+
     return data
 
 
@@ -87,14 +78,20 @@ def transform_data(
         val_df: pd.DataFrame,
         training_pipeline_params: TrainingPipelineParams,
 ) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
+    logger.info("build Transformer...")
     transformer = build_transformer(training_pipeline_params.feature_params)
     transformer.fit(train_df)
 
+    logger.info("making features...")
     train_features = make_features(transformer, train_df)
     train_target = extract_target(train_df, training_pipeline_params.feature_params)
+    logger.info(f"train_features.shape is {train_features.shape}")
+    logger.info(f"train_target.shape is {train_target.shape}")
 
     val_features = make_features(transformer, val_df)
     val_target = extract_target(val_df, training_pipeline_params.feature_params)
+    logger.info(f"val_features.shape is {val_features.shape}")
+    logger.info(f"val_target.shape is {val_target.shape}")
 
     return train_features, train_target, val_features, val_target
 

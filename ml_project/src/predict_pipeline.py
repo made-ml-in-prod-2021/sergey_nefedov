@@ -30,7 +30,6 @@ def predict_pipeline(predict_pipeline_params: PredictPipelineParams):
     dataset = read_data(predict_pipeline_params.input_data_path)
     logger.info(f"loaded dataset from {predict_pipeline_params.input_data_path}")
 
-    logger.info(f"Load model from {predict_pipeline_params.model_path}")
     model = load_model(predict_pipeline_params.model_path)
     logger.info("Model loading has finished. ")
 
