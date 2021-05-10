@@ -1,4 +1,4 @@
-input_data_path: "data/raw/heart.csv"
+input_data_path: "data/test/test_data.csv"
 model_path: "models/model.pkl"
 output_path: "data/predict/predictions.csv"
 feature_params:

@@ -16,8 +16,7 @@ from src.models import (
     load_model,
     predict_model,
 )
-from src.features.build_features import build_transformer
-from src.features import make_features
+
 
 logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(sys.stdout)
@@ -34,15 +33,11 @@ def predict_pipeline(predict_pipeline_params: PredictPipelineParams):
     logger.info("Model loading has finished. ")
 
     logger.info("Start making predictions...")
-
-    transformer = build_transformer(predict_pipeline_params.feature_params)
-    transformer.fit(dataset)
-    features = make_features(transformer, dataset)
-    logger.info(f"train_features.shape is {features.shape}")
+    logger.info(f"train_features.shape is {dataset.shape}")
 
     predicts = predict_model(
         model,
-        features,
+        dataset,
     )
     logger.info("Predictions computed. Save to file. ")
     save_data(target_to_dataframe(predicts), predict_pipeline_params.output_path)

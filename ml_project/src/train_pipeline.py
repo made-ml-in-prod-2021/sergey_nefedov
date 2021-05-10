@@ -6,13 +6,20 @@ from typing import Tuple
 import click
 import pandas as pd
 
-from src.data import read_data, split_train_val_data
+from src.data import (
+    read_data,
+    split_train_val_data,
+    save_data,
+)
 from src.entities.train_pipeline_params import (
     TrainingPipelineParams,
     read_training_pipeline_params,
 )
 from src.features import make_features
-from src.features.build_features import extract_target, build_transformer
+from src.features.build_features import (
+    extract_target,
+    build_transformer,
+)
 from src.features.outlier_transformer import OutlierTransformer
 from src.models import (
     train_model,
@@ -39,6 +46,10 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
 
     train_features, train_target, val_features, val_target = transform_data(train_df, val_df, training_pipeline_params)
 
+    logger.info("Save test_data without labels")
+    save_data(val_features, training_pipeline_params.output_test_data_path)
+    path_to_test_data = training_pipeline_params.output_test_data_path
+
     logger.info(f"Training model: model_type = {training_pipeline_params.train_params.model_type}")
     model = train_model(train_features, train_target, training_pipeline_params.train_params)
     logger.info("Model is ready for predict")
@@ -55,7 +66,7 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
 
     path_to_model = serialize_model(model, training_pipeline_params.output_model_path)
 
-    return path_to_model, metrics
+    return path_to_model, path_to_test_data, metrics
 
 
 def remove_outliers(
