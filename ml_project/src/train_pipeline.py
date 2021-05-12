@@ -5,6 +5,7 @@ import sys
 from typing import Tuple
 import click
 import pandas as pd
+from sklearn.base import TransformerMixin
 
 from src.data import (
     read_data,
@@ -44,18 +45,26 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
     logger.info(f"train_df.shape is {train_df.shape}")
     logger.info(f"val_df.shape is {val_df.shape}")
 
-    train_features, train_target, val_features, val_target = transform_data(train_df, val_df, training_pipeline_params)
-
     logger.info("Save test_data without labels")
-    save_data(val_features, training_pipeline_params.output_test_data_path)
+    save_data(val_df, training_pipeline_params.output_test_data_path)
     path_to_test_data = training_pipeline_params.output_test_data_path
 
+    train_target, val_target, transformer = transform_data(train_df, val_df, training_pipeline_params)
+
     logger.info(f"Training model: model_type = {training_pipeline_params.train_params.model_type}")
-    model = train_model(train_features, train_target, training_pipeline_params.train_params)
+    if training_pipeline_params.train_params.model_type == 'RandomForestClassifier':
+        logger.info(f"model's params: "
+                    f"n_estimators = {training_pipeline_params.train_params.n_estimators}, "
+                    f"random_state = {training_pipeline_params.train_params.random_state}")
+    elif training_pipeline_params.train_params.model_type == 'LogisticRegression':
+        logger.info(f"Model's params:"
+                    f"max_iter = {training_pipeline_params.train_params.max_iter},"
+                    f"random_state = {training_pipeline_params.train_params.random_state}")
+    model = train_model(transformer, train_df, train_target, training_pipeline_params.train_params)
     logger.info("Model is ready for predict")
 
     logger.info(f"Making predicts...")
-    predicts = predict_model(model, val_features)
+    predicts = predict_model(model, val_df)
     logger.info(f"predicts.shape is {predicts.shape}")
     metrics = evaluate_model(predicts, val_target)
     logger.info(f"metrics is {metrics}")
@@ -88,7 +97,7 @@ def transform_data(
         train_df: pd.DataFrame,
         val_df: pd.DataFrame,
         training_pipeline_params: TrainingPipelineParams,
-) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series]:
+) -> Tuple[pd.Series, pd.Series, TransformerMixin]:
     logger.info("build Transformer...")
     transformer = build_transformer(training_pipeline_params.feature_params)
     transformer.fit(train_df)
@@ -104,7 +113,7 @@ def transform_data(
     logger.info(f"val_features.shape is {val_features.shape}")
     logger.info(f"val_target.shape is {val_target.shape}")
 
-    return train_features, train_target, val_features, val_target
+    return train_target, val_target, transformer
 
 
 @click.command(name="train_pipeline")
