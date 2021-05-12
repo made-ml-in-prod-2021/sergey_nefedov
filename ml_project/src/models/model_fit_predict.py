@@ -24,8 +24,8 @@ logger.addHandler(handler)
 
 def train_model(
         transformer: TransformerMixin,
-        features: pd.DataFrame,
-        target: pd.Series,
+        X_train: pd.DataFrame,
+        y_train: pd.Series,
         train_params: TrainingParams,
 ) -> Pipeline:
     if train_params.model_type == "RandomForestClassifier":
@@ -45,16 +45,16 @@ def train_model(
     )
 
     logger.info("Starting fit model...")
-    clf_model.fit(features, target)
+    clf_model.fit(X_train, y_train)
 
     return clf_model
 
 
 def predict_model(
-    model: Pipeline, features: pd.DataFrame, use_log_trick: bool = False
+    model: Pipeline, X_test: pd.DataFrame, use_log_trick: bool = False
 ) -> np.ndarray:
     logger.info("Starting model predict...")
-    predicts = model.predict(features)
+    predicts = model.predict(X_test)
     if use_log_trick:
         predicts = np.exp(predicts)
     logger.info("Predicts are ready.")

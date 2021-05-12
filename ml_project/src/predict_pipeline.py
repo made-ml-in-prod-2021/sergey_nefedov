@@ -26,18 +26,18 @@ logger.addHandler(handler)
 
 def predict_pipeline(predict_pipeline_params: PredictPipelineParams):
     logger.info(f"start predict pipeline with params {predict_pipeline_params}")
-    dataset = read_data(predict_pipeline_params.input_data_path)
+    X_test = read_data(predict_pipeline_params.input_data_path)
     logger.info(f"loaded dataset from {predict_pipeline_params.input_data_path}")
 
     model = load_model(predict_pipeline_params.model_path)
     logger.info("Model loading has finished. ")
 
     logger.info("Start making predictions...")
-    logger.info(f"train_features.shape is {dataset.shape}")
+    logger.info(f"X_test.shape is {X_test.shape}")
 
     predicts = predict_model(
         model,
-        dataset,
+        X_test,
     )
     logger.info("Predictions computed. Save to file. ")
     save_data(target_to_dataframe(predicts), predict_pipeline_params.output_path)

@@ -1,13 +1,12 @@
 import pandas as pd
 
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.pipeline import Pipeline
 
 from src.entities import (
     FeatureParams, TrainingParams
 )
 from src.features.build_features import (
-    make_features,
     extract_target,
     build_transformer,
 )
@@ -23,8 +22,8 @@ def test_model_fit_predict(
         training_params: TrainingParams,
 ):
     transformer = build_transformer(feature_params)
-    transformer.fit(test_df)
-    features = make_features(transformer, test_df)
+    X = test_df.drop(columns=[feature_params.target_col])
+    transformer.fit(X)
     target = extract_target(test_df, feature_params)
 
     model = RandomForestClassifier(
@@ -32,8 +31,14 @@ def test_model_fit_predict(
         random_state=training_params.random_state,
     )
 
-    model.fit(features, target)
-    predicts = predict_model(model, features)
+    clf_model = Pipeline(
+        steps=[('preprocessor', transformer),
+               ('classifier', model),
+               ]
+    )
+
+    clf_model.fit(X, target)
+    predicts = predict_model(clf_model, X)
     metrics = evaluate_model(predicts, target)
 
     expected_metrics = ['accuracy', 'recall', 'f1_score', 'roc_auc']

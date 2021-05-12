@@ -16,7 +16,6 @@ from src.entities.train_pipeline_params import (
     TrainingPipelineParams,
     read_training_pipeline_params,
 )
-from src.features import make_features
 from src.features.build_features import (
     extract_target,
     build_transformer,
@@ -42,14 +41,11 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
     data = remove_outliers(data, training_pipeline_params)
 
     train_df, val_df = split_train_val_data(data, training_pipeline_params.splitting_params)
-    logger.info(f"train_df.shape is {train_df.shape}")
-    logger.info(f"val_df.shape is {val_df.shape}")
+    X_train, y_train, X_test, y_test, transformer = transform_data(train_df, val_df, training_pipeline_params)
 
     logger.info("Save test_data without labels")
-    save_data(val_df, training_pipeline_params.output_test_data_path)
+    save_data(X_test, training_pipeline_params.output_test_data_path)
     path_to_test_data = training_pipeline_params.output_test_data_path
-
-    train_target, val_target, transformer = transform_data(train_df, val_df, training_pipeline_params)
 
     logger.info(f"Training model: model_type = {training_pipeline_params.train_params.model_type}")
     if training_pipeline_params.train_params.model_type == 'RandomForestClassifier':
@@ -60,13 +56,13 @@ def train_pipeline(training_pipeline_params: TrainingPipelineParams):
         logger.info(f"Model's params:"
                     f"max_iter = {training_pipeline_params.train_params.max_iter},"
                     f"random_state = {training_pipeline_params.train_params.random_state}")
-    model = train_model(transformer, train_df, train_target, training_pipeline_params.train_params)
+    model = train_model(transformer, X_train, y_train, training_pipeline_params.train_params)
     logger.info("Model is ready for predict")
 
     logger.info(f"Making predicts...")
-    predicts = predict_model(model, val_df)
+    predicts = predict_model(model, X_test)
     logger.info(f"predicts.shape is {predicts.shape}")
-    metrics = evaluate_model(predicts, val_target)
+    metrics = evaluate_model(predicts, y_test)
     logger.info(f"metrics is {metrics}")
 
     logger.info(f"Dumping metrics to {training_pipeline_params.metric_path}")
@@ -97,23 +93,24 @@ def transform_data(
         train_df: pd.DataFrame,
         val_df: pd.DataFrame,
         training_pipeline_params: TrainingPipelineParams,
-) -> Tuple[pd.Series, pd.Series, TransformerMixin]:
+) -> Tuple[pd.DataFrame, pd.Series, pd.DataFrame, pd.Series, TransformerMixin]:
+
+    logger.info("making features...")
+    X_train = train_df.drop(columns=[training_pipeline_params.feature_params.target_col])
+    y_train = extract_target(train_df, training_pipeline_params.feature_params)
+    logger.info(f"X_train.shape is {X_train.shape}")
+    logger.info(f"y_train.shape is {y_train.shape}")
+
+    X_test = val_df.drop(columns=[training_pipeline_params.feature_params.target_col])
+    y_test = extract_target(val_df, training_pipeline_params.feature_params)
+    logger.info(f"X_test.shape is {X_test.shape}")
+    logger.info(f"y_test.shape is {y_test.shape}")
+
     logger.info("build Transformer...")
     transformer = build_transformer(training_pipeline_params.feature_params)
     transformer.fit(train_df)
 
-    logger.info("making features...")
-    train_features = make_features(transformer, train_df)
-    train_target = extract_target(train_df, training_pipeline_params.feature_params)
-    logger.info(f"train_features.shape is {train_features.shape}")
-    logger.info(f"train_target.shape is {train_target.shape}")
-
-    val_features = make_features(transformer, val_df)
-    val_target = extract_target(val_df, training_pipeline_params.feature_params)
-    logger.info(f"val_features.shape is {val_features.shape}")
-    logger.info(f"val_target.shape is {val_target.shape}")
-
-    return train_target, val_target, transformer
+    return X_train, y_train, X_test, y_test, transformer
 
 
 @click.command(name="train_pipeline")
