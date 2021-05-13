@@ -1,0 +1,22 @@
+input_data_path: "data/test/test_data.csv"
+model_path: "models/model.pkl"
+output_path: "data/predict/predictions.csv"
+feature_params:
+  categorical_features:
+    - "sex"
+    - "cp"
+    - "fbs"
+    - "restecg"
+    - "exang"
+    - "slope"
+    - "ca"
+    - "thal"
+  numerical_features:
+    - "age"
+    - "trestbps"
+    - "chol"
+    - "thalach"
+    - "oldpeak"
+  features_to_drop:
+    - ""
+  target_col: "target"
