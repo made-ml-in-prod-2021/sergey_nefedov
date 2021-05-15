@@ -14,18 +14,18 @@ python make_request.py
 # Docker:
 Build:
 ~~~
-docker build -t sergeynefedov/inference:v1 .
+docker build -t sergeynefedov/inference:v3 .
 ~~~
 Run:
 ~~~
-docker run -p 8000:8000 sergeynefedov/inference:v1
+docker run -p 8000:8000 sergeynefedov/inference:v3
 ~~~
 Push:
 ~~~
 docker login
-docker push sergeynefedov/inference:v1
+docker push sergeynefedov/inference:v3
 ~~~
 Pull command:
 ~~~
-docker pull sergeynefedov/inference:v1
+docker pull sergeynefedov/inference:v3
 ~~~
